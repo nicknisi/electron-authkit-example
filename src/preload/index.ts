@@ -1,25 +1,22 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
+const CH = {
+  SIGN_IN: 'auth:sign-in',
+  SIGN_OUT: 'auth:sign-out',
+  GET_USER: 'auth:get-user',
+  ON_AUTH_CHANGE: 'auth:on-auth-change'
+} as const
+
 const authApi = {
-  signIn: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('auth:sign-in'),
-
-  signOut: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('auth:sign-out'),
-
-  getUser: (): Promise<unknown> => ipcRenderer.invoke('auth:get-user'),
-
+  signIn: () => ipcRenderer.invoke(CH.SIGN_IN),
+  signOut: () => ipcRenderer.invoke(CH.SIGN_OUT),
+  getUser: () => ipcRenderer.invoke(CH.GET_USER),
   onAuthChange: (callback: (data: { user: unknown }) => void): (() => void) => {
-    const listener = (
-      _event: Electron.IpcRendererEvent,
-      data: { user: unknown }
-    ): void => {
-      callback(data)
-    }
-    ipcRenderer.on('auth:on-auth-change', listener)
-    return () => ipcRenderer.removeListener('auth:on-auth-change', listener)
-  },
+    const listener = (_: Electron.IpcRendererEvent, data: { user: unknown }): void => callback(data)
+    ipcRenderer.on(CH.ON_AUTH_CHANGE, listener)
+    return () => ipcRenderer.removeListener(CH.ON_AUTH_CHANGE, listener)
+  }
 }
 
 if (process.contextIsolated) {

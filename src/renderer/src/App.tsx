@@ -1,34 +1,49 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import { useState } from 'react'
+import { Theme, Container, Flex, Box, Card, Button } from '@radix-ui/themes'
+import { Home } from './components/Home'
+import { Account } from './components/Account'
+import { SignInButton } from './components/SignInButton'
+import { Footer } from './components/Footer'
+
+type View = 'home' | 'account'
 
 function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+  const [currentView, setCurrentView] = useState<View>('home')
 
   return (
-    <>
-      <img alt="logo" className="logo" src={electronLogo} />
-      <div className="creator">Powered by electron-vite</div>
-      <div className="text">
-        Build an Electron app with <span className="react">React</span>
-        &nbsp;and <span className="ts">TypeScript</span>
-      </div>
-      <p className="tip">
-        Please try pressing <code>F12</code> to open the devTool
-      </p>
-      <div className="actions">
-        <div className="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">
-            Documentation
-          </a>
-        </div>
-        <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={ipcHandle}>
-            Send IPC
-          </a>
-        </div>
-      </div>
-      <Versions></Versions>
-    </>
+    <Theme accentColor="iris" panelBackground="solid" style={{ backgroundColor: 'var(--gray-1)' }}>
+      <Container style={{ backgroundColor: 'var(--gray-1)' }}>
+        <Flex direction="column" gap="5" p="5" style={{ minHeight: '100vh' }}>
+          <Box asChild flexGrow="1">
+            <Card size="4">
+              <Flex direction="column" height="100%">
+                <Flex asChild justify="between">
+                  <header>
+                    <Flex gap="4">
+                      <Button variant="soft" onClick={() => setCurrentView('home')}>
+                        Home
+                      </Button>
+                      <Button variant="soft" onClick={() => setCurrentView('account')}>
+                        Account
+                      </Button>
+                    </Flex>
+                    <SignInButton />
+                  </header>
+                </Flex>
+
+                <Flex flexGrow="1" align="center" justify="center">
+                  <main>
+                    {currentView === 'home' && <Home onNavigate={setCurrentView} />}
+                    {currentView === 'account' && <Account onNavigate={setCurrentView} />}
+                  </main>
+                </Flex>
+              </Flex>
+            </Card>
+          </Box>
+          <Footer />
+        </Flex>
+      </Container>
+    </Theme>
   )
 }
 

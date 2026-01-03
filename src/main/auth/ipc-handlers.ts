@@ -1,11 +1,6 @@
 import { ipcMain, shell, BrowserWindow } from 'electron'
 import { authService, getAuthState } from './auth-service'
-import {
-  AUTH_CHANNELS,
-  type AuthIpcResult,
-  type AuthChangePayload,
-  type ElectronResponse,
-} from './types'
+import { AUTH_CHANNELS, type AuthIpcResult, type AuthChangePayload } from './types'
 
 export function setupAuthIpcHandlers(mainWindow: BrowserWindow): void {
   ipcMain.handle(AUTH_CHANNELS.SIGN_IN, async (): Promise<AuthIpcResult> => {
@@ -21,8 +16,15 @@ export function setupAuthIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle(AUTH_CHANNELS.SIGN_OUT, async (): Promise<AuthIpcResult> => {
     try {
-      const response: ElectronResponse = { type: 'electron-response' }
-      await authService.clearSession(response)
+      const auth = await getAuthState()
+
+      if (auth.user) {
+        const { logoutUrl } = await authService.signOut(auth.sessionId)
+        await shell.openExternal(logoutUrl)
+      } else {
+        await authService.clearSession({})
+      }
+
       notifyAuthChange(mainWindow, null)
       return { success: true }
     } catch (error) {
@@ -33,8 +35,8 @@ export function setupAuthIpcHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle(AUTH_CHANNELS.GET_USER, async () => {
     try {
-      const auth = await getAuthState()
-      return auth.user ?? null
+      const { user } = await getAuthState()
+      return user ?? null
     } catch (error) {
       console.error('Get user failed:', error)
       return null
@@ -42,10 +44,6 @@ export function setupAuthIpcHandlers(mainWindow: BrowserWindow): void {
   })
 }
 
-export function notifyAuthChange(
-  mainWindow: BrowserWindow,
-  user: AuthChangePayload['user']
-): void {
-  const payload: AuthChangePayload = { user }
-  mainWindow.webContents.send(AUTH_CHANNELS.ON_AUTH_CHANGE, payload)
+export function notifyAuthChange(mainWindow: BrowserWindow, user: AuthChangePayload['user']): void {
+  mainWindow.webContents.send(AUTH_CHANNELS.ON_AUTH_CHANGE, { user })
 }

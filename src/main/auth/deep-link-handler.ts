@@ -1,15 +1,12 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'path'
 import { authService } from './auth-service'
-import type { ElectronRequest, ElectronResponse } from './types'
 
 const PROTOCOL = 'workos-auth'
 
 export function registerProtocol(): void {
   if (process.defaultApp && process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [
-      path.resolve(process.argv[1]),
-    ])
+    app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [path.resolve(process.argv[1])])
   } else {
     app.setAsDefaultProtocolClient(PROTOCOL)
   }
@@ -37,14 +34,7 @@ export function setupDeepLinkHandling(
     }
 
     try {
-      const request: ElectronRequest = { type: 'electron-request' }
-      const response: ElectronResponse = { type: 'electron-response' }
-
-      await authService.handleCallback(request, response, {
-        code,
-        state: params.get('state') ?? undefined,
-      })
-
+      await authService.handleCallback({}, {}, { code, state: params.get('state') ?? undefined })
       onAuthComplete(true)
     } catch (err) {
       console.error('Auth callback failed:', err)
@@ -61,13 +51,9 @@ export function setupDeepLinkHandling(
 
   app.on('second-instance', (_event, argv) => {
     const url = argv.find((arg) => arg.startsWith(`${PROTOCOL}://`))
-    if (url) {
-      handleUrl(url)
-    }
+    if (url) handleUrl(url)
 
-    if (mainWindow.isMinimized()) {
-      mainWindow.restore()
-    }
+    if (mainWindow.isMinimized()) mainWindow.restore()
     mainWindow.focus()
   })
 }
