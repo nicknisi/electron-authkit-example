@@ -1,5 +1,8 @@
 # Adding WorkOS AuthKit to an Electron App
 
+<img width="2024" height="1564" alt="capture_20260105_093742" src="https://github.com/user-attachments/assets/6610fb06-dd1b-4211-a3b5-2f1b60c94311" />
+
+
 This guide walks through integrating WorkOS AuthKit into an Electron application using `@workos/authkit-session`.
 
 ## Why authkit-session?
