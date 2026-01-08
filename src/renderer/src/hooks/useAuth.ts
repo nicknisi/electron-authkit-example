@@ -21,12 +21,12 @@ export function useAuth(): UseAuthReturn {
 
   useEffect(() => {
     window.auth.getUser().then((u) => {
-      setUser(u as User | null)
+      setUser(u)
       setLoading(false)
     })
 
     return window.auth.onAuthChange(({ user: u }) => {
-      setUser(u as User | null)
+      setUser(u)
       setLoading(false)
     })
   }, [])

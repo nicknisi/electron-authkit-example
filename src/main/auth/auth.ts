@@ -55,14 +55,18 @@ export async function handleCallback(code: string): Promise<User> {
   return auth.user
 }
 
+function parseJwtPayload(token: string): Record<string, unknown> {
+  return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString())
+}
+
 /** Get current user, refreshing token if expired */
 export async function getUser(): Promise<User | null> {
   const session = store.get('session')
   if (!session?.accessToken) return null
 
-  // Check if token expired (with 10s buffer)
-  const exp = JSON.parse(Buffer.from(session.accessToken.split('.')[1], 'base64').toString()).exp
-  if (Date.now() > exp * 1000 - 10000) {
+  const { exp } = parseJwtPayload(session.accessToken) as { exp: number }
+  const tokenExpired = Date.now() > exp * 1000 - 10000
+  if (tokenExpired) {
     try {
       const refreshed = await workos.userManagement.authenticateWithRefreshToken({
         clientId: CLIENT_ID,
@@ -94,8 +98,8 @@ export function getSessionId(): string | null {
   const session = store.get('session')
   if (!session?.accessToken) return null
   try {
-    const payload = JSON.parse(Buffer.from(session.accessToken.split('.')[1], 'base64').toString())
-    return payload.sid ?? null
+    const { sid } = parseJwtPayload(session.accessToken) as { sid?: string }
+    return sid ?? null
   } catch {
     return null
   }

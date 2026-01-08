@@ -5,7 +5,7 @@ import { Account } from './components/Account'
 import { SignInButton } from './components/SignInButton'
 import { Footer } from './components/Footer'
 
-type View = 'home' | 'account'
+export type View = 'home' | 'account'
 
 function App(): React.JSX.Element {
   const [currentView, setCurrentView] = useState<View>('home')

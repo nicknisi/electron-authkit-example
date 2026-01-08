@@ -1,7 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
-const CH = {
+// Channel names must match AUTH_CHANNELS in src/main/auth/types.ts
+const AUTH_CHANNELS = {
   SIGN_IN: 'auth:sign-in',
   SIGN_OUT: 'auth:sign-out',
   GET_USER: 'auth:get-user',
@@ -9,13 +10,13 @@ const CH = {
 } as const
 
 const authApi = {
-  signIn: () => ipcRenderer.invoke(CH.SIGN_IN),
-  signOut: () => ipcRenderer.invoke(CH.SIGN_OUT),
-  getUser: () => ipcRenderer.invoke(CH.GET_USER),
+  signIn: () => ipcRenderer.invoke(AUTH_CHANNELS.SIGN_IN),
+  signOut: () => ipcRenderer.invoke(AUTH_CHANNELS.SIGN_OUT),
+  getUser: () => ipcRenderer.invoke(AUTH_CHANNELS.GET_USER),
   onAuthChange: (callback: (data: { user: unknown }) => void): (() => void) => {
     const listener = (_: Electron.IpcRendererEvent, data: { user: unknown }): void => callback(data)
-    ipcRenderer.on(CH.ON_AUTH_CHANGE, listener)
-    return () => ipcRenderer.removeListener(CH.ON_AUTH_CHANGE, listener)
+    ipcRenderer.on(AUTH_CHANNELS.ON_AUTH_CHANGE, listener)
+    return () => ipcRenderer.removeListener(AUTH_CHANNELS.ON_AUTH_CHANGE, listener)
   }
 }
 

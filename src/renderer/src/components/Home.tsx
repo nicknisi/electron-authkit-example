@@ -1,8 +1,7 @@
 import { Flex, Heading, Text, Button } from '@radix-ui/themes'
 import { useAuth } from '../hooks/useAuth'
 import { SignInButton } from './SignInButton'
-
-type View = 'home' | 'account'
+import type { View } from '../App'
 
 interface HomeProps {
   onNavigate: (view: View) => void
